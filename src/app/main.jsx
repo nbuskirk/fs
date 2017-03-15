@@ -1,32 +1,40 @@
 import React, {Component} from 'react';
 import styles from './styles.less'
-import MessageList from './messagelist.jsx';
+import UserList from './UserList.jsx'
+
+const connection_str = 'http://' + document.domain + ':' + 3700;
+const io = require('socket.io-client');
+const socket = io.connect(connection_str);
 
 //http://demo3138870.mockable.io/
 
-export default class Main extends React.Component {
- 
-  constructor(props, context) { 
-    super(props, context)
-    this.state = {
-      msgs: [{'text':'loading'}]
-    }
-  }
-
+const Main = React.createClass({
+  getInitialState(){
+    return {users: []}
+  },
   componentDidMount(){
-    fetch('http://demo3138870.mockable.io/fs')
-      .then((resp) => resp.json())
-      .then((data) => {
-        this.setState({
-          msgs: data.msgs
-        })
-      })
-  }
+    
+    socket.on('message', this._handleMessage);
+  },
+
+  _handleMessage(data) {
+    console.log(data);
+    this.setState({
+      users: data.users
+    });
+  },
 
   render() {
     return(
-      <MessageList msgs={this.state.msgs} />
+      <div className="container">
+        <h1>Users</h1>
+        <ul>{this.state.users.map(function(user,i){
+          return <li key={i}>{user}</li>
+        })}</ul>
+      </div>
     )
   }
 
-}
+});
+
+module.exports = Main;
